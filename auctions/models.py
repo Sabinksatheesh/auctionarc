@@ -57,10 +57,17 @@ class Auction(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # Ensure that the end_time is always after date_created
+        # Make sure both datetimes are timezone-aware
+        if timezone.is_naive(self.end_time):
+            self.end_time = timezone.make_aware(self.end_time)
+
+        if timezone.is_naive(self.date_created):
+            self.date_created = timezone.make_aware(self.date_created)
+
+    # Ensure that the end_time is always after date_created
         if self.end_time <= self.date_created:
             raise ValueError("End time must be after the auction start time.")
-        
+    
         super().save(*args, **kwargs)
     
     def __str__(self):

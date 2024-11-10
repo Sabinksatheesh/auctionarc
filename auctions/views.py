@@ -7,6 +7,9 @@ from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from datetime import datetime
+from django.http import JsonResponse
+from django.utils import timezone
 
 from .models import Auction, Bid, Category, Image, User
 from .forms import AuctionForm, ImageForm, CommentForm, BidForm
@@ -124,7 +127,9 @@ def auction_create(request):
         if auction_form.is_valid() and image_form.is_valid():
             new_auction = auction_form.save(commit=False)
             new_auction.creator = request.user
-            new_auction.end_time = request.POST.get('end_time')
+            end_time_str = request.POST.get('end_time')
+            new_auction.end_time = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M')
+
             new_auction.save()
 
             for auction_form in image_form.cleaned_data:
@@ -304,7 +309,6 @@ def auction_bid(request, auction_id):
             'title': 'Auction'
         })
 
-
 def auction_close(request, auction_id):
     '''
     It allows the signed in user who created the listing
@@ -323,6 +327,27 @@ def auction_close(request, auction_id):
         auction.watchers.add(request.user)
 
         return HttpResponseRedirect(reverse('watchlist_view'))
+
+def close_auction(request):
+    # Get the current time
+    now = timezone.now()
+    
+    # Fetch all auctions where end time has passed and they are still active
+    auctions_to_close = Auction.objects.filter(end_time__lte=now, active=True)
+
+    # Close auctions and set their highest bidder (if any)
+    for auction in auctions_to_close:
+        auction.active = False
+        
+        # Get the highest bidder
+        highest_bid = Bid.objects.filter(auction=auction).last()
+        if highest_bid:
+            auction.buyer = highest_bid.user
+        
+        auction.save()
+
+    # Return a response indicating how many auctions were closed
+    return JsonResponse({'closed_auctions': len(auctions_to_close)}, status=200)
 
 
 def auction_comment(request, auction_id):

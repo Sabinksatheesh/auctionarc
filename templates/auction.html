@@ -4,7 +4,6 @@
 {% block title %}Auctions | {{ title }} {% endblock %}
 
 {% block categories %}
-
     <!-- Divider -->
     <hr class='sidebar-divider'>
     
@@ -24,7 +23,6 @@
             </a>
         </li>
     {% endfor %}
-    
 {% endblock %}
 
 
@@ -33,7 +31,7 @@
     <!-- Page Heading -->
     <h1 class='h3 mb-4 text-gray-800'>{{ auction.title }}</h1>
     
-    <!-- Product category and Product creator -->
+    <!-- Product category, creator, created date, and countdown timer -->
     <h6>
         <span class='text-muted'>
             Category: <span class='text-primary'>{{ auction.category }}</span>
@@ -41,7 +39,10 @@
         <span class='text-muted'>
             Listed by: <span class='text-primary'>{{ auction.creator }}</span>
         </span> &nbsp; | &nbsp;
-        <span class='text-muted'>Created on {{ auction.date_created}}</span>
+        <span class='text-muted'>Created on {{ auction.date_created }}</span> &nbsp; | &nbsp;
+        <span class='text-muted'>
+            Auction ends in: <span id="countdown-timer" class='text-primary'></span>
+        </span>
     </h6>
     
     <!-- Product price -->
@@ -219,11 +220,10 @@
                                                 </p>
                                             {% endif %}
                                                 
-                                            <div class='form-group'>
+                                            <div id="bid-form-section" class='form-group'>
                                                 <form action="{% url 'auction_bid' auction.id %}" method='POST'>
                                                     {% csrf_token %}
                                                     <div class='form-group'>
-                                                        {% comment %} {{ bid_form }} {% endcomment %}
                                                         <label for="id_amount">Amount:</label>
                                                         <input type="number" name="amount" step="0.01" class="form-control m-2" required="" id="id_amount">
                                                         <br>
@@ -240,100 +240,91 @@
                                         </div>
                                     </div>
                                 </div>
-                                    
-                                <!-- Comments -->
-                                <div class='col-xl-6'>
-                                    <div class='card mb-4'>
-                                        <div class='card-header'>
-                                            <i class='fas fa-comments'></i>
-                                            Comments
-                                        </div>
-                                        <div class='card-body'>
-                                                
-                                            <!-- Comments -->
-                                            {% if auction.active %}
-                                                <div>
-                                                    <form action="{% url 'auction_comment' auction.id %}" method='POST'>
-                                                        {% csrf_token %}
-                                                        <div class='form-group'>
-                                                            {{ comment_form }}
-                                                            <br>
-                                                            <button type='submit' class='btn btn-success'>
-                                                                Add a comment
-                                                            </button>
-                                                            <a href="{% url 'index' %}" class='btn btn-secondary'>
-                                                                Cancel
-                                                            </a>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            {% endif %}
-                                                
-                                            {% for comment in comments %}
-                                                <div>
-                                                    <div class='text-muted'>
-                                                        <strong>{{ comment.user|default:"Unknown" }}</strong> commented on {{ comment.date_created }}
+                            </div>
+                            
+                            <!-- Comments -->
+                            <div class='col-xl-6'>
+                                <div class='card mb-4'>
+                                    <div class='card-header'>
+                                        <i class='fas fa-comments'></i>
+                                        Comments
+                                    </div>
+                                    <div class='card-body'>
+                                            
+                                        <!-- Comments -->
+                                        {% if auction.active %}
+                                            <div>
+                                                <form action="{% url 'auction_comment' auction.id %}" method='POST'>
+                                                    {% csrf_token %}
+                                                    <div class='form-group'>
+                                                        {{ comment_form }}
+                                                        <br>
+                                                        <button type='submit' class='btn btn-success'>
+                                                            Add a comment
+                                                        </button>
+                                                        <a href="{% url 'index' %}" class='btn btn-secondary'>
+                                                            Cancel
+                                                        </a>
                                                     </div>
+                                                </form>
+                                            </div>
+                                        {% endif %}
+                                                
+                                        {% for comment in comments %}
+                                            <div class='card mb-2'>
+                                                <div class='card-header'>
+                                                    {{ comment.user }} on {{ comment.date }}
                                                 </div>
-                                                <div>
-                                                    <p>{{ comment.comment }}</p>
+                                                <div class='card-body'>
+                                                    <blockquote class='blockquote mb-0'>
+                                                        <p>{{ comment.comment }}</p>
+                                                    </blockquote>
                                                 </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% elif auction.creator == user and auction.active %}
-                        
-                            <div class='row'>
-                                
-                                <!-- Comments -->
-                                <div class='col-xl-12'>
-                                    <div class='card mb-4'>
-                                        <div class='card-header'>
-                                            <i class='fas fa-comments'></i>
-                                            Comments
-                                        </div>
+                                            </div>
+                                        {% endfor %}
                                         
-                                        <div class='card-body'>
-                                            
-                                            <!-- Comments -->
-                                            {% if auction.active %}
-                                                <div>
-                                                    <form action="{% url 'auction_comment' auction.id %}" method='POST'>
-                                                        {% csrf_token %}
-                                                        <div class='form-group'>
-                                                            {{ comment_form }}
-                                                            <br>
-                                                            <button type='submit' class='btn btn-success'>
-                                                                Add a comment
-                                                            </button>
-                                                            <a href="{% url 'index' %}" class='btn btn-secondary'>
-                                                                Cancel
-                                                            </a>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            {% for comment in comments %}
-                                                <div>
-                                                    {{ comment.user|default:"Unknown" }} commented on {{ comment.date_created }}
-                                                </div>
-                                                <div>
-                                                    <p>{{ comment.comment }}</p>
-                                                </div>
-                                            {% endfor %}
-                                            
-                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        {% endif %}
-                    
-                    </div>
+                            
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
+    </div>
 
+{% endblock %}
+
+{% block custom_scripts %}
+    <script>
+        // Countdown Timer
+        function countdown(endTime) {
+            var countDownDate = new Date(endTime).getTime();
+            
+            var x = setInterval(function() {
+                var now = new Date().getTime();
+                var distance = countDownDate - now;
+                console.log(endTime,countDownDate,now)
+                
+                if (distance > 0) {
+                    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    
+                    document.getElementById("countdown-timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+                } else {
+                    clearInterval(x);
+                    document.getElementById("countdown-timer").innerHTML = "Auction has closed";
+                    document.getElementById("bid-form-section").style.display = "none";
+                }
+            }, 1000);
+        }
+console.log('{{ auction.end_time }}','ll')
+        // Initialize countdown with auction end time
+   // Initialize countdown with auction end time in ISO format
+countdown('{{ auction.end_time|date:"Y-m-d\\TH:i:s" }}');
+
+    </script>
 {% endblock %}

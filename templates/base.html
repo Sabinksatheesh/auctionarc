@@ -209,16 +209,16 @@
                 <!-- End of Main Content -->
                 
                 <!-- Footer -->
-                <footer class='sticky-footer bg-light'>
+                {% comment %} <footer class='sticky-footer bg-light'>
                     <div class='container my-auto'>
                         <div class='copyright text-center my-auto'>
                             <span>
                              {% comment %} <script>document.write(new Date().getFullYear())</script>  {% endcomment %}
-                             AUCTION ARC.
+                           {% comment %} AUCTION ARC.
                             </span>
                         </div>
                     </div>
-                </footer>
+                </footer> {% endcomment %} 
                 <!-- End of Footer -->
 
             </div>
@@ -247,10 +247,37 @@
             <script src='{% static "js/chart-area-demo.js" %}'></script>
             <script src='{% static "js/chart-bar-demo.js" %}'></script>
             <script src='{% static "js/chart-pie-demo.js" %}'></script>
-            <script src='{% static "js/scripts.js" %}'></script>
-
+            <script src='{%   static "js/scripts.js" %}'></script>
+            <script>
+                // Function to close expired auctions
+                function closeExpiredAuctions() {
+                    fetch('/auction/close_auctions', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.closed_auctions > 0) {
+                            console.log(`${data.closed_auctions} auctions closed.`);
+                            // You can update the UI here to reflect the closed auctions
+                        } else {
+                            console.log('No auctions to close.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error closing auctions:', error);
+                    });
+                }
+        
+                // Call closeExpiredAuctions every 5 minutes (300,000 ms)
+                setInterval(closeExpiredAuctions, 60000);  // 5 minutes
+            </script>
+        
         {% endblock %}
-
+        {% block custom_scripts %}
+        {% endblock %}
     </body>
 
 </html>
