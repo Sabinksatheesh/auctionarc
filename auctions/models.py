@@ -2,11 +2,13 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
+from datetime import timedelta
 
 
 class User(AbstractUser):
     def __str__(self):
         return f'{self.username}'
+
 
 
 class Category(models.Model):
@@ -22,6 +24,7 @@ class Category(models.Model):
     @property
     def count_active_auctions(self):
         return Auction.objects.filter(category=self).count()
+
 
 
 class Auction(models.Model):
@@ -45,6 +48,24 @@ class Auction(models.Model):
     buyer = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     watchers = models.ManyToManyField(User, related_name='watchlist', blank=True)
     active = models.BooleanField(default=True)
+
+    # New field for auction end time
+    end_time = models.DateTimeField(
+        null=False,
+        blank=False,
+        default=timezone.now() + timedelta(days=7)
+    )
+
+    def save(self, *args, **kwargs):
+        # Ensure that the end_time is always after date_created
+        if self.end_time <= self.date_created:
+            raise ValueError("End time must be after the auction start time.")
+        
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.title
+
 
     def __str__(self):
         return f'Auction #{self.id}: {self.title} ({self.creator})'

@@ -209,6 +209,7 @@
                                                     {% if auction.current_bid %}
                                                         <div class='alert alert-warning' role='alert'>
                                                             Your bid must be greater than <strong>₹{{ auction.current_bid|default:auction.starting_bid }}</strong>.
+                                                            
                                                         </div>
                                                     {% else %}
                                                         <div class='alert alert-warning' role='alert'>
@@ -222,7 +223,9 @@
                                                 <form action="{% url 'auction_bid' auction.id %}" method='POST'>
                                                     {% csrf_token %}
                                                     <div class='form-group'>
-                                                        {{ bid_form }}
+                                                        {% comment %} {{ bid_form }} {% endcomment %}
+                                                        <label for="id_amount">Amount:</label>
+                                                        <input type="number" name="amount" step="0.01" class="form-control m-2" required="" id="id_amount">
                                                         <br>
                                                         <button type='submit' class='btn btn-primary'>
                                                             Place a bid
@@ -233,6 +236,7 @@
                                                     </div>
                                                 </form>
                                             </div>
+                                            
                                         </div>
                                     </div>
                                 </div>

@@ -25,7 +25,6 @@
     
 {% endblock %}
 
-
 {% block body %}
 
     <!-- Page Heading -->
@@ -44,13 +43,21 @@
                     <form action="{% url 'auction_create' %}" method='POST' enctype='multipart/form-data'>
                         {% csrf_token %}
                         <div class='form-group'>
+                            <!-- Render the auction form excluding 'end_time' -->
                             {{ auction_form.as_p }}
                             {{ image_form.management_form }}
                             
                             {% for form in image_form %}
                                 {{ form.as_p }}
                             {% endfor %}
-                            
+
+                            <!-- Manually render 'end_time' as a datetime-local picker -->
+                            <div class="form-group">
+                                <label for="id_end_time">End Time</label>
+                                <input type="datetime-local" name="end_time" id="id_end_time" 
+                                    value="{{ auction_form.end_time.value|default:'' }}" class="form-control">
+                            </div>
+
                             <button type='submit' class='btn btn-primary'>
                                 Save
                             </button>

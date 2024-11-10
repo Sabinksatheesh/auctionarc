@@ -51,7 +51,6 @@ def register(request):
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
-
         # Ensure password matches confirmation
         password = request.POST['password']
         confirmation = request.POST['confirmation']
@@ -125,6 +124,7 @@ def auction_create(request):
         if auction_form.is_valid() and image_form.is_valid():
             new_auction = auction_form.save(commit=False)
             new_auction.creator = request.user
+            new_auction.end_time = request.POST.get('end_time')
             new_auction.save()
 
             for auction_form in image_form.cleaned_data:
@@ -268,7 +268,7 @@ def auction_details_view(request, auction_id):
         'categories': Category.objects.all(),
         'auction': auction,
         'images': auction.get_images.all(),
-        'bid_form': BidForm(),
+        # 'bid_form': BidForm(),
         'comments': auction.get_comments.all(),
         'comment_form': CommentForm(),
         'title': 'Auction'
@@ -285,10 +285,11 @@ def auction_bid(request, auction_id):
 
     if amount >= auction.starting_bid and (auction.current_bid is None or amount > auction.current_bid):
         auction.current_bid = amount
-        form = BidForm(request.POST)
-        new_bid = form.save(commit=False)
-        new_bid.auction = auction
-        new_bid.user = request.user
+        # form = BidForm(request.POST)
+        # new_bid = form.save(commit=False)
+        new_bid = Bid(auction=auction, user=request.user, amount=amount)
+        # new_bid.auction = auction
+        # new_bid.user = request.user
         new_bid.save()
         auction.save()
 
@@ -298,7 +299,7 @@ def auction_bid(request, auction_id):
             'categories': Category.objects.all(),
             'auction': auction,
             'images': auction.get_images.all(),
-            'form': BidForm(),
+            # 'form': BidForm(),
             'error_min_value': True,
             'title': 'Auction'
         })
